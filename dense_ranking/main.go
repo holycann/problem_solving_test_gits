@@ -86,33 +86,27 @@ func inputListScore(scanner *bufio.Scanner, totalPlayer int) ([]int, error) {
 
 // Calculate Dense Ranking From List Score And Gits Score
 func denseRanking(listScore []int, gitsScore []int) ([]int, error) {
-	var uniqueScore, result []int
+	sort.Slice(listScore, func(i, j int) bool {
+		return listScore[i] > listScore[j]
+	})
 
-	// Find Unique Score
+	// Build unique descending scores
+	uniqueScore := []int{}
 	for _, score := range listScore {
 		if len(uniqueScore) == 0 || uniqueScore[len(uniqueScore)-1] != score {
 			uniqueScore = append(uniqueScore, score)
 		}
 	}
 
-	// Give Rank To Gits Player Base On Gits Score And Unique Score
+	result := make([]int, 0, len(gitsScore))
+	// Find Gits Score
 	for _, gs := range gitsScore {
-		rank := 1
-		for _, us := range uniqueScore {
-			if gs < us {
-				rank++
-			} else {
-				break
-			}
-		}
-
+		idx := sort.Search(len(uniqueScore), func(i int) bool {
+			return uniqueScore[i] <= gs
+		})
+		rank := idx + 1
 		result = append(result, rank)
 	}
-
-	// Dense Sorting
-	sort.Slice(result, func(i, j int) bool {
-		return result[i] > result[j]
-	})
 
 	return result, nil
 }
